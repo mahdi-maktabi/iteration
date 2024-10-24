@@ -162,3 +162,44 @@ lotr_df =
     lotr_import("J3:L6", "return_king"))
 ```
 
+
+One more example using NSDUH data.
+
+```{r}
+nsduh_url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+nsduh_html = read_html(nsduh_url)
+
+marj_table =
+  nsduh_html |> 
+  html_table() |> 
+  nth(1) |> 
+  slice(-1) |> 
+  mutate(drug = "marj")
+
+cocaine_table =
+  nsduh_html |> 
+  html_table() |> 
+  nth(4) |> 
+  slice(-1) |> 
+  mutate(drug = "cocaine")
+
+heroine_table =
+  nsduh_html |> 
+  html_table() |> 
+  nth(5) |> 
+  slice(-1) |> 
+  mutate(drug = "heroine")
+```
+
+Now do this using a function instaed.
+
+```{r}
+source("source/nsduh_table_format.R")
+
+bind_rows(
+  nsduh_import(html = nsduh_html, 1, "marj"),
+  nsduh_import(html = nsduh_html, 4, "cocaine"),
+  nsduh_import(html = nsduh_html, 5, "heroine"))
+```
+
