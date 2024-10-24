@@ -1,0 +1,68 @@
+---
+title: "Iteration"
+author: "Mahdi Maktabi"
+date: "2024-10-24"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rvest)
+```
+
+What is a function?
+
+* A function takes inputs, does something, and returns a result
+* For computations or operations you define and need to repeat, write a function for arbitrary inputs to produce the corresponding outputs.
+
+## Writing my first function
+
+As an example, here is a z-score computation
+
+```{r}
+x_vec = rnorm(n = 25, mean = 10, sd = 3.5)
+
+(x_vec - mean(x_vec)) / sd(x_vec)
+```
+
+Now I'll write a function to do this.
+
+```{r}
+z_scores = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Z scores cannot be computed for length 1 vectors")
+  }
+  
+  z = mean(x) / sd(x)
+  
+  z
+}
+```
+
+Does this always work? 
+
+```{r, warning=TRUE}
+z_scores(x=3)
+z_scores(x = c("my", "name", "is", "mahdi"))
+
+z_scores(x = x_vec)
+```
+
+
+## A new function
+
+```{r}
+mean_and_sd = function(x) {
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+  
+  
+  
+  
+}
+```
+
