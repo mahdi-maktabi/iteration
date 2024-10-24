@@ -86,7 +86,7 @@ sim_df |>
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  9.94  5.47
+    ## 1  9.81  4.80
 
 Simulation function to check sample mean and sd.
 
@@ -115,7 +115,7 @@ sim_mean_sd(samp_size = 30, true_mean = 4, true_sd = 12)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  4.86  12.2
+    ## 1  3.57  12.9
 
 ``` r
 sim_mean_sd(true_mean = 4, true_sd = 12, samp_size = 30)
@@ -124,20 +124,49 @@ sim_mean_sd(true_mean = 4, true_sd = 12, samp_size = 30)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  2.91  14.7
+    ## 1  6.61  11.7
 
 ## Revisit LoTR movies dataset
 
 ``` r
 fellowship_df = 
   read_excel("data/LotR_Words.xlsx", range = "B3:D6") |> 
-  mutate(movie = "fellowship")
+  mutate(movie = "fellowship") |> 
+  janitor::clean_names()
 
 two_towers_df = 
   read_excel("data/LotR_Words.xlsx", range = "F3:H6") |> 
-  mutate(movie = "two_towers_df")
+  mutate(movie = "two_towers_df") |> 
+  janitor::clean_names()
 
 return_king_df = 
   read_excel("data/LotR_Words.xlsx", range = "J3:L6") |> 
-  mutate(movie = "return_king_df")
+  mutate(movie = "return_king_df") |> 
+  janitor::clean_names()
+```
+
+Doing this with a function instead
+
+``` r
+lotr_import = function(cell_range, movie_title) {
+  
+  movie_df = 
+    read_excel("data/LotR_Words.xlsx", range = cell_range) |> 
+    mutate(movie = movie_title) |> 
+    janitor::clean_names() |> 
+    pivot_longer(
+      female:male,
+      names_to = "sex",
+      values_to = "words") |> 
+    select(movie, everything())
+  
+  return(movie_df)
+  
+}
+
+lotr_df = 
+  bind_rows(
+    lotr_import(cell_range = "B3:D6", movie_title = "fellowship"),
+    lotr_import(cell_range = "F3:H6", movie_title = "two_towers"),
+    lotr_import("J3:L6", "return_king"))
 ```
