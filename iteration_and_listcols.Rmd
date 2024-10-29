@@ -3,6 +3,8 @@ title: "Iteration and ListCols"
 author: "Mahdi Maktabi"
 date: "2024-10-29"
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -82,5 +84,123 @@ for (i in 1:4) {
   output[[i]] = mean_and_sd(list_norm[[i]])
   
 }
+```
+
+
+## Do the same thing
+
+but with 'map' instead.
+
+```{r}
+output = map(list_norm, mean_and_sd)
+```
+
+Let's do a couple of other things.
+
+```{r}
+output = map(list_norm, median)
+
+output = map(list_norm, IQR)
+
+output = map_dbl(list_norm, median)
+
+output = map_dfr(list_norm, median)
+
+output =
+  map(list_norm, mean_and_sd) |> 
+  bind_rows()
+```
+
+
+
+## LIST COLUMNS!!
+
+```{r}
+listcol_df = 
+  tibble(
+    name = c("a", "b", "c", "d"),
+    samp = list_norm
+  )
+
+listcol_df
+
+listcol_df |> 
+  filter(name %in% c("a", "b"))
+
+listcol_df |> 
+  select(-samp)
+```
+
+```{r}
+listcol_df[["samp"]]["a"]
+```
+
+Compute mean and sd
+
+```{r}
+mean_and_sd(listcol_df[["samp"]][["a"]])
+
+
+map(listcol_df[["samp"]], mean_and_sd)
+```
+
+Add a list column
+
+```{r}
+listcol_df |> 
+  mutate(
+    output = map(samp, mean_and_sd), #map will return in list format
+    iqr = map_dbl(samp, IQR)) #map_dbl will make it directly an output
+
+listcol_df |> 
+  mutate(
+    output = map(samp, mean_and_sd),
+    iqr = map_dbl(samp, IQR)) |> 
+  select(-samp) |> 
+  unnest(output) #Takes that nested df and expands it into columns.
+```
+
+
+### NSDUH Dataset
+
+This is our version of the dataset from last time.
+
+```{r}
+nsduh_import = function(html, number) {
+  
+  drug_table =
+    html |> 
+    html_table() |> 
+    nth(number) |> 
+    slice(-1) |> 
+    select(-contains("P Value"))
+  
+  return(drug_table)
+  
+} 
+```
+
+We need to import the html, and then extract the correct table.
+
+```{r}
+nsduh_url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+nsduh_html = read_html(nsduh_url)
+```
+
+```{r}
+nsduh_import(html = nsduh_html, number = 1)
+nsduh_import(html = nsduh_html, number = 4)
+nsduh_import(html = nsduh_html, number = 5)
+```
+
+```{r}
+nsduh_df =
+  tibble(
+    drug = c("marj", "cocaine", "heroin"),
+    number = c(1, 4, 5)
+  ) |> 
+  mutate(table = map(number, \(num) nsduh_import(html = nsduh_html, num))) |> 
+  unnest(table)
 ```
 
