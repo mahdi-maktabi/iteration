@@ -70,3 +70,17 @@ mean_and_sd(list_norm[["c"]])
 mean_and_sd(list_norm[["d"]])
 ```
 
+## Use a for loop
+
+Create output list, and run a for loop.
+
+```{r}
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  
+  output[[i]] = mean_and_sd(list_norm[[i]])
+  
+}
+```
+

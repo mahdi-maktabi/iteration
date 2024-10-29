@@ -36,8 +36,8 @@ l[[1]]
 l[[4]]
 ```
 
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ## -2.3325 -0.6259 -0.2014 -0.1132  0.4606  2.3399
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ## -1.97393 -0.72768 -0.04089 -0.03197  0.60531  2.26760
 
 Make a list that’s hopefully a it more useful.
 
@@ -53,10 +53,10 @@ list_norm =
 list_norm[["a"]]
 ```
 
-    ##  [1] -2.2171508 -7.4041601  1.2272754 -5.3208684  0.9042059 -1.2775303
-    ##  [7] -0.2092997  4.7148483 -1.0382945  4.2372900 -5.8349650  1.4777070
-    ## [13]  0.7960632  1.3122646  4.5778305  2.5579120  3.5372471 -1.7742574
-    ## [19]  0.2225527 -7.9393001
+    ##  [1] -1.7287046 -1.4012740  5.5196425 -6.4871127  3.2864239  7.6685024
+    ##  [7] -4.4364595 -3.0862493  8.0706987 -8.8099659  3.1123669  0.5076012
+    ## [13] -2.9882211 10.2353085 -2.9426963 -2.8251289  7.7509093 -2.2569171
+    ## [19]  1.7243040  5.3001024
 
 Let’s reuse a function we wrote last time.
 
@@ -83,9 +83,9 @@ mean_and_sd(list_norm[["a"]])
 ```
 
     ## # A tibble: 1 × 2
-    ##     mean    sd
-    ##    <dbl> <dbl>
-    ## 1 -0.373  3.81
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1 0.811  5.34
 
 ``` r
 mean_and_sd(list_norm[["b"]])
@@ -94,7 +94,7 @@ mean_and_sd(list_norm[["b"]])
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  4.31  5.18
+    ## 1  5.67  4.85
 
 ``` r
 mean_and_sd(list_norm[["c"]])
@@ -103,7 +103,7 @@ mean_and_sd(list_norm[["c"]])
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1 -3.54  9.92
+    ## 1  2.44  8.50
 
 ``` r
 mean_and_sd(list_norm[["d"]])
@@ -112,4 +112,18 @@ mean_and_sd(list_norm[["d"]])
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  4.26  12.7
+    ## 1  8.03  9.55
+
+## Use a for loop
+
+Create output list, and run a for loop.
+
+``` r
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  
+  output[[i]] = mean_and_sd(list_norm[[i]])
+  
+}
+```
