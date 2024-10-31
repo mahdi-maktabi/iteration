@@ -1,0 +1,164 @@
+---
+title: "simulations"
+author: "Mahdi Maktabi"
+date: "2024-10-31"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rvest)
+```
+
+
+```{r, eval=FALSE}
+x_vec = rnorm(n = 25, mean = 10, sd = 3.5)
+
+(x_vec - mean(x_vec)) / sd(x_vec)
+
+```
+
+```{r, eval=FALSE}
+z_scores = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Z scores cannot be computed for length 1 vectors")
+  }
+  
+  z = mean(x) / sd(x)
+  
+  z
+}
+```
+
+
+
+```{r, error=TRUE}
+mean_and_sd = function(x) {
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+  
+  out_df =
+    tibble(
+      mean = mean_x,
+      sd = sd_x
+    )
+  
+  return(out_df)
+  
+}
+
+mean_and_sd(x_vec)
+```
+
+## Check stuff using a simulation
+
+```{r}
+sim_df =
+  tibble(
+    x = rnorm(30, 10, 5)
+  )
+
+sim_df |> 
+  summarize(
+    mean = mean(x),
+    sd = sd(x)
+  )
+```
+
+Simulation function to check sample mean and sd.
+
+```{r}
+sim_mean_sd = function(samp_size, true_mean = 4, true_sd = 12) {
+  
+  sim_df =
+  tibble(
+    x = rnorm(samp_size, true_mean, true_sd)
+  )
+
+  out_df = 
+    sim_df |> 
+    summarize(
+      mean = mean(x),
+      sd = sd(x)
+  )
+  
+  return(out_df)
+  
+}
+
+sim_mean_sd(samp_size = 30, true_mean = 4, true_sd = 12)
+sim_mean_sd(true_mean = 4, true_sd = 12, samp_size = 30)
+
+```
+
+
+Run this a lot of times ...
+
+```{r}
+sim_mean_sd(30)
+```
+
+
+run this using a for loop? 
+
+```{r}
+output = vector("list", 1000)
+
+for (i in 1:1000) {
+  
+  output[[i]] = sim_mean_sd(30)
+}
+
+#output
+
+
+bind_rows(output) |> 
+  summarize(
+    ave_mean = mean(mean),
+    sd_mean = sd(mean))
+```
+
+
+Can I use `map` instead?
+
+```{r}
+sim_res =
+  tibble(
+    iter = 1:1000
+  ) |> 
+  mutate(samp_res = map(iter, sim_mean_sd, samp_size = 30)) |> 
+  unnest(samp_res)
+```
+
+Could I try different sample sizes?
+
+```{r}
+sim_res =
+  expand_grid(
+    n = c(10, 30, 60, 100),
+    iter = 1:1000
+  ) |> 
+  mutate(samp_res = map(n, sim_mean_sd)) |> 
+  unnest(samp_res)
+```
+
+
+```{r}
+sim_res |> 
+  group_by(n) |> 
+  summarize(
+    se = sd(mean)
+  )
+```
+
+```{r}
+sim_res |> 
+  filter(n == 100) |> 
+  ggplot(aes(x = mean)) +
+  geom_histogram()
+```
+
