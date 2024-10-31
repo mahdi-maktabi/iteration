@@ -63,7 +63,7 @@ sim_df |>
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  10.3  5.99
+    ## 1  10.9  5.62
 
 Simulation function to check sample mean and sd.
 
@@ -92,7 +92,7 @@ sim_mean_sd(samp_size = 30, true_mean = 4, true_sd = 12)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  7.87  11.0
+    ## 1  5.13  14.0
 
 ``` r
 sim_mean_sd(true_mean = 4, true_sd = 12, samp_size = 30)
@@ -101,7 +101,7 @@ sim_mean_sd(true_mean = 4, true_sd = 12, samp_size = 30)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  2.24  13.9
+    ## 1  5.61  14.8
 
 Run this a lot of times …
 
@@ -112,7 +112,7 @@ sim_mean_sd(30)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  2.45  10.7
+    ## 1  4.47  12.1
 
 run this using a for loop?
 
@@ -136,7 +136,7 @@ bind_rows(output) |>
     ## # A tibble: 1 × 2
     ##   ave_mean sd_mean
     ##      <dbl>   <dbl>
-    ## 1     3.87    2.31
+    ## 1     4.08    2.22
 
 Can I use `map` instead?
 
@@ -172,10 +172,10 @@ sim_res |>
     ## # A tibble: 4 × 2
     ##       n    se
     ##   <dbl> <dbl>
-    ## 1    10  3.95
+    ## 1    10  3.77
     ## 2    30  2.18
-    ## 3    60  1.52
-    ## 4   100  1.18
+    ## 3    60  1.50
+    ## 4   100  1.23
 
 ``` r
 sim_res |> 
@@ -187,3 +187,111 @@ sim_res |>
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](simulations_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+## Simple Linear Regression
+
+``` r
+sim_data = 
+  tibble(
+    x = rnorm(30, mean = 1, sd = 1),
+    y = 2+3*x + rnorm(30, 0, 1)
+  ) 
+
+lm_fit = lm(y ~ x, data = sim_data)
+
+sim_data |> 
+  ggplot(aes(x = x, y = y)) + 
+  geom_point() +
+  stat_smooth(method = "lm")
+```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+![](simulations_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+Turn this into a function
+
+``` r
+sim_regression = function(n) {
+  
+  sim_data = 
+    tibble(
+      x = rnorm(n, mean = 1, sd = 1),
+      y = 2+3*x + rnorm(n, 0, 1)
+    ) 
+
+  lm_fit = lm(y ~ x, data = sim_data)
+  
+  out_df =
+    tibble(
+      beta0_hat = coef(lm_fit)[1],
+      beta1_hat = coef(lm_fit)[2]
+    )
+  
+  return(out_df)
+  
+}
+
+sim_res =
+  expand_grid(
+    sample_size = c(30, 60),
+    iter = 1:1000
+  ) |> 
+mutate(lm_res = map(sample_size, sim_regression)) |> 
+  unnest(lm_res)
+
+sim_res |> 
+  mutate(sample_size = str_c("n = ", sample_size)) |> 
+  ggplot(aes(x = sample_size, y = beta1_hat)) +
+  geom_boxplot()
+```
+
+![](simulations_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+``` r
+sim_res |> 
+  filter(sample_size == 30) |> 
+  ggplot(aes(x = beta0_hat, y = beta1_hat)) +
+  geom_point()
+```
+
+![](simulations_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
+
+## Birthday problem!!
+
+Lets put people in a room and see how many have the same birthday.
+
+``` r
+bday_sim = function(n) {
+  
+  bdays = sample(1:365, size = n, replace = TRUE)
+
+  duplicate = length(unique(bdays)) < n
+
+  return(duplicate)
+  
+}
+
+bday_sim(10)
+```
+
+    ## [1] FALSE
+
+Going to run this above alot.
+
+``` r
+sim_res =
+  expand_grid(
+    n = 2:50,
+    iter = 1:10000
+  ) |> 
+  mutate(res = map_lgl(n, bday_sim)) |> 
+  group_by(n) |> 
+  summarize(prob = mean(res))
+
+sim_res |> 
+  ggplot(aes(x = n, y = prob)) +
+  geom_line()
+```
+
+![](simulations_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
